@@ -1,4 +1,4 @@
-module LoadTestBlocker
+module github.com/nsaxelby/loadtestblocker
 
 go 1.22.1
 

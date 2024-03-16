@@ -7,15 +7,15 @@
         var ws;
 
         window.addEventListener("load", function (evt) {
-            document.getElementById("form").onsubmit = function () {
-                if (!ws) {
-                    return false;
-                }
-
-                ws.send("button pressed");
-                return false;
+            document.getElementById("startform").onsubmit = function () {
+                startTest();
+                return false
             };
 
+            document.getElementById("stopform").onsubmit = function () {
+                stopTest();
+                return false
+            };
 
             if (window["WebSocket"]) {
                 if (ws) {
@@ -47,14 +47,33 @@
             var newValue = document.getElementById('mylog').value + "\n" + msg;
             document.getElementById('mylog').value = newValue
         }
+
+        function startTest() {
+            if (!ws) {
+                return
+            }
+
+            ws.send("start");
+        }
+
+        function stopTest() {
+            if (!ws) {
+                return
+            }
+
+            ws.send("stop");
+        }
     </script>
 </head>
 
 <body>
     <textarea id="mylog">
     </textarea>
-    <form id="form">
+    <form id="startform">
         <input type="submit" value="Start Test" />
+    </form>
+    <form id="stopform">
+        <input type="submit" value="Stop Test" />
     </form>
 </body>
 
