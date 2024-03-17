@@ -6,8 +6,10 @@ package website
 
 import (
 	"bytes"
+	"encoding/json"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -77,9 +79,20 @@ func (c *Client) readPump() {
 
 func (c *Client) handleMessage(msg []byte) error {
 	myString := string(msg[:])
-	switch myString {
+	splitString := strings.Split(myString, " ")
+	commandString := splitString[0]
+	commandData := strings.Replace(myString, commandString+" ", "", 1)
+
+	switch commandString {
 	case "start":
-		c.commandHandler.StartLoadTest(models.LoadTestConfig{})
+		var startData models.CommandFromClient
+		err := json.Unmarshal([]byte(commandData), &startData)
+
+		if err != nil {
+			return err
+		}
+
+		c.commandHandler.StartLoadTest(models.LoadTestConfig{Url: startData.HeartbeatUrl, Duration: 30, RatePerSecond: 1})
 		return nil
 	case "stop":
 		c.commandHandler.StopLoadTest()

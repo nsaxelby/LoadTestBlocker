@@ -15,7 +15,7 @@ func NewLoadTestManager() *LoadTestManager {
 }
 
 func (l *LoadTestManager) StartLoadTest(config models.LoadTestConfig) {
-	l.heartbeat.StartHeartbeat()
+	l.heartbeat.StartHeartbeat(config)
 }
 
 func (l *LoadTestManager) StopLoadTest() {

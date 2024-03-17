@@ -19,6 +19,7 @@ func main() {
 	manager := loadtest.NewLoadTestManager()
 
 	fs := http.FileServer(http.Dir("./web"))
+
 	// Start web server to show basic info, just a text box is fine
 	http.Handle("/", fs)
 

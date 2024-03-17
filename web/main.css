@@ -2,3 +2,8 @@ p {
     color: red;
     text-align: center;
 }
+
+#startform {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
