@@ -45,8 +45,10 @@ window.addEventListener("load", function (evt) {
 });
 
 function addMessage(msg) {
-    var newValue = document.getElementById('mylog').value + "\n" + msg;
-    document.getElementById('mylog').value = newValue
+    var mylogarea = document.getElementById('mylog');
+    var newValue = mylogarea.value + "\n" + msg;
+    mylogarea.value = newValue
+    scrollLogToBottom(mylogarea)
 }
 
 function startTest(commandFromClient) {
@@ -65,5 +67,9 @@ function stopTest() {
     }
 
     ws.send("stop");
+}
+
+function scrollLogToBottom(t) {
+    t.scrollTop = t.scrollHeight;
 }
 
