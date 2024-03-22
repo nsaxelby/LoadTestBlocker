@@ -16,7 +16,7 @@ func main() {
 	hub := website.NewHub()
 	go hub.Run()
 
-	manager := loadtest.NewLoadTestManager()
+	manager := loadtest.NewLoadTestManager(hub)
 
 	fs := http.FileServer(http.Dir("./web"))
 
