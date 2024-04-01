@@ -10,17 +10,17 @@ export const options = {
             duration: '6000s',
 
             // How many iterations per timeUnit
-            rate: 3000,
+            rate: 5000,
 
             // Start `rate` iterations per second
             timeUnit: '1s',
 
             // Pre-allocate VUs
-            preAllocatedVUs: 50,
+            preAllocatedVUs: 5000,
         },
     },
 };
 
 export default function () {
-    http.get('http://localhost/json');
+    http.get('http://localhost:9000/json');
 }
