@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -92,7 +93,12 @@ func (c *Client) handleMessage(msg []byte) error {
 			return err
 		}
 
-		c.commandHandler.StartLoadTest(models.LoadTestConfig{Url: startData.HeartbeatUrl, Duration: 30, RatePerSecond: 1})
+		rps, err := strconv.Atoi(startData.RPS)
+		if err != nil {
+			return err
+		}
+
+		c.commandHandler.StartLoadTest(models.LoadTestConfig{Url: startData.HeartbeatUrl, Duration: 30, RatePerSecond: rps})
 		return nil
 	case "stop":
 		c.commandHandler.StopLoadTest()

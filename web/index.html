@@ -17,9 +17,17 @@
                 <div class="col">
                     <label for="heartbeatUrlInput" class="form-label">Heartbeat URL</label>
                     <input type="text" class="form-control" id="heartbeatUrlInput"
-                        aria-describedby="heartbeatUrlInputHelp">
-                    <div id="heartbeatUrlInputHelp" class="form-text">Full URL of the heartbeat including scheme and
-                        path
+                        aria-describedby="heartbeatUrlInputHelp" value="http://localhost:9000/json">
+                    <div id="heartbeatUrlInputHelp" class="form-text">Full URL (e.g. http://example.com/mypath) of the
+                        heartbeat
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label for="loadRPS" class="form-label">Rate per second</label>
+                    <input type="text" class="form-control" id="loadRPS" aria-describedby="loadRPSHelp" value="300">
+                    <div id="loadRPSHelp" class="form-text">Requests per second for load
                     </div>
                 </div>
             </div>
@@ -27,7 +35,7 @@
             <button type="button" class="btn btn-primary" id="stopbutton">Stop Test</button>
         </form>
         <div class="mb-3">
-            <label for="mylog" class="form-label">Output</label>
+            <label for="mylog" class="form-label">Heartbeat Output</label>
             <textarea class="form-control" id="mylog" rows="6"></textarea>
         </div>
     </div>
