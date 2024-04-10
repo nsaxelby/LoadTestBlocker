@@ -1,6 +1,7 @@
 class CommandFromClient {
-    constructor(heartbeatURL) {
+    constructor(heartbeatURL, RPS) {
         this.HeartbeatUrl = heartbeatURL;
+        this.RPS = RPS;
     }
 }
 
@@ -8,7 +9,8 @@ var ws;
 
 window.addEventListener("load", function (evt) {
     document.getElementById("startform").onsubmit = function () {
-        const command = new CommandFromClient(document.getElementById("heartbeatUrlInput").value);
+        const command = new CommandFromClient(document.getElementById("heartbeatUrlInput").value,
+            document.getElementById("loadRPS").value);
         startTest(command);
         return false
     };

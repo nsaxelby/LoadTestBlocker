@@ -71,10 +71,11 @@ func heartbeat(h *Heartbeat, config models.LoadTestConfig) {
 			resp.Body.Close()
 		}
 
+		h.heartbeatCount++
+		time.Sleep(time.Second)
+
 		if h.heartbeatRunning == false {
 			return
 		}
-		h.heartbeatCount++
-		time.Sleep(time.Second)
 	}
 }
