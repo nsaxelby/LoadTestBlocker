@@ -101,7 +101,13 @@ func (c *Client) handleMessage(msg []byte) error {
 			return err
 		}
 
-		c.commandHandler.StartLoadTest(models.LoadTestConfig{Url: startData.HeartbeatUrl, Duration: 30, RatePerSecond: rps})
+		c.commandHandler.StartLoadTest(
+			models.LoadTestConfig{
+				Url:                startData.HeartbeatUrl,
+				Duration:           30,
+				RatePerSecond:      rps,
+				TargetRPSTestCheck: startData.TargetRPSTestCheck,
+			})
 		return nil
 	case "stop":
 		c.commandHandler.StopLoadTest()

@@ -6,7 +6,8 @@ type CommandHandler interface {
 }
 
 type LoadTestConfig struct {
-	Url           string
-	Duration      int
-	RatePerSecond int
+	Url                string
+	Duration           int
+	RatePerSecond      int
+	TargetRPSTestCheck bool
 }

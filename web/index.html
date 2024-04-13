@@ -24,7 +24,15 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col">
+                <div class="col-md-3">
+                    <label for="targetRPSTestCheck" class="form-check-label">Targeted RPS</label>
+                    <input type="checkbox" class="form-check-input" id="targetRPSTestCheck"
+                        aria-describedby="targetRPSTestCheckHelp" checked>
+                    <div id="targetRPSTestCheckHelp" class="form-text">Run load test which is adaptive, and aims to have
+                        a constant RPS
+                    </div>
+                </div>
+                <div class="col-md-2">
                     <label for="loadRPS" class="form-label">Rate per second</label>
                     <input type="text" class="form-control" id="loadRPS" aria-describedby="loadRPSHelp" value="300">
                     <div id="loadRPSHelp" class="form-text">Requests per second for load
@@ -34,9 +42,15 @@
             <button type="submit" class="btn btn-primary" id="startbutton">Start Test</button>
             <button type="button" class="btn btn-primary" id="stopbutton">Stop Test</button>
         </form>
-        <div class="mb-3">
-            <label for="mylog" class="form-label">Heartbeat Output</label>
-            <textarea class="form-control" id="mylog" rows="6"></textarea>
+        <div class="row">
+            <div class="col-md-6">
+                <label for="heartbeatoutputlog" class="form-label">Heartbeat Output</label>
+                <textarea class="form-control" id="heartbeatoutputlog" rows="6"></textarea>
+            </div>
+            <div class="col-md-6">
+                <label for="loadtestoutput" class="form-label">Loadtest Output</label>
+                <textarea class="form-control" id="loadtestoutput" rows="6"></textarea>
+            </div>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"

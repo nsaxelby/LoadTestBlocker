@@ -49,23 +49,23 @@ func (h *Heartbeat) StopHeartbeat() {
 }
 
 func heartbeat(h *Heartbeat, config models.LoadTestConfig) {
+	client := &http.Client{
+		Timeout: time.Second * 1,
+	}
 	for {
-		client := &http.Client{
-			Timeout: time.Second * 1,
-		}
 		watch := stopwatch.Start()
 		resp, err := client.Get(config.Url)
 		watch.Stop()
 		if err != nil {
 			h.timeOfLastBlock = time.Now()
-			failureMessage := strconv.Itoa(h.heartbeatCount) + "  heartbeat failed : " + err.Error()
+			failureMessage := "Heartbeat:" + strconv.Itoa(h.heartbeatCount) + "  heartbeat failed : " + err.Error()
 			log.Println(failureMessage)
 			h.hub.Broadcast <- []byte(failureMessage)
 		}
 
 		if resp != nil {
 			h.timeOfLastSuccess = time.Now()
-			outputMessage := strconv.Itoa(h.heartbeatCount) + "  heartbeat response : " + resp.Status + fmt.Sprintf(" Milliseconds elapsed: %v", watch.Milliseconds()*time.Millisecond)
+			outputMessage := "Heartbeat:" + strconv.Itoa(h.heartbeatCount) + "  heartbeat response : " + resp.Status + fmt.Sprintf(" Milliseconds elapsed: %v", watch.Milliseconds()*time.Millisecond)
 			log.Println(outputMessage)
 			h.hub.Broadcast <- []byte(outputMessage)
 			resp.Body.Close()

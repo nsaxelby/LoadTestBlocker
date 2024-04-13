@@ -1,7 +1,6 @@
 package loadtest
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -32,23 +31,26 @@ func NewSimpleLoad(hub *website.Hub) *SimpleLoad {
 	}
 }
 
-func (l *SimpleLoad) StartSimpleLoadTest(config models.LoadTestConfig) {
+func (l *SimpleLoad) Start(config models.LoadTestConfig) {
 	if l.simpleLoadTestRunning {
 		return
 	} else {
 		// Starts the goroutine
 		l.simpleLoadTestRunning = true
-		go loadtest(l, config)
+		go simpleloadtest(l, config)
 		log.Println("heartbeat started")
 	}
 }
 
-func (l *SimpleLoad) StopSimpleLoadTest() {
+func (l *SimpleLoad) Stop() {
 	l.simpleLoadTestRunning = false
 	log.Println("heartbeat stopped")
 }
 
-func loadtest(l *SimpleLoad, config models.LoadTestConfig) {
+func simpleloadtest(l *SimpleLoad, config models.LoadTestConfig) {
+	client := &http.Client{
+		Timeout: time.Second * 1,
+	}
 	for {
 		currentSecond, err := strconv.Atoi(time.Now().Format("05"))
 		if err != nil {
@@ -63,9 +65,6 @@ func loadtest(l *SimpleLoad, config models.LoadTestConfig) {
 			l.requestsInCurrentSecond++
 		}
 
-		client := &http.Client{
-			Timeout: time.Second * 1,
-		}
 		watch := stopwatch.Start()
 		resp, err := client.Get(config.Url)
 		watch.Stop()
@@ -76,9 +75,6 @@ func loadtest(l *SimpleLoad, config models.LoadTestConfig) {
 		}
 
 		if resp != nil {
-			outputMessage := strconv.Itoa(l.requestCount) + "  load test response : " + resp.Status + fmt.Sprintf(" Milliseconds elapsed: %v", watch.Milliseconds()*time.Millisecond)
-			log.Println(outputMessage)
-			//l.hub.Broadcast <- []byte(outputMessage)
 			resp.Body.Close()
 		}
 
