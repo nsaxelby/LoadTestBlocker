@@ -1,6 +1,8 @@
 package loadtest
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -58,8 +60,26 @@ func simpleloadtest(l *SimpleLoad, config models.LoadTestConfig) {
 		}
 
 		if currentSecond != l.currentSecondBenchmark {
+			loadTestObj := &models.ServerLoadTestEvent{
+				RPS:       l.requestsInCurrentSecond,
+				Timestamp: int64(time.Now().UnixMilli()),
+				Count:     l.requestCount,
+				VU:        1,
+			}
+
+			baseEvent := &models.ServerEvent{
+				EventType: "loadtest",
+				Data:      loadTestObj,
+			}
+
+			srvEvent, err := json.Marshal(baseEvent)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+
 			l.currentSecondBenchmark = currentSecond
-			l.hub.Broadcast <- []byte("RPS: " + strconv.Itoa(l.requestsInCurrentSecond))
+			l.hub.Broadcast <- []byte(srvEvent)
 			l.requestsInCurrentSecond = 0
 		} else {
 			l.requestsInCurrentSecond++
@@ -71,7 +91,6 @@ func simpleloadtest(l *SimpleLoad, config models.LoadTestConfig) {
 		if err != nil {
 			failureMessage := strconv.Itoa(l.requestCount) + "  load test failed : " + err.Error()
 			log.Println(failureMessage)
-			//l.hub.Broadcast <- []byte(failureMessage)
 		}
 
 		if resp != nil {

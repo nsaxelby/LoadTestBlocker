@@ -10,13 +10,13 @@ export const options = {
             duration: '6000s',
 
             // How many iterations per timeUnit
-            rate: 5000,
+            rate: 300,
 
             // Start `rate` iterations per second
             timeUnit: '1s',
 
             // Pre-allocate VUs
-            preAllocatedVUs: 5000,
+            preAllocatedVUs: 1,
         },
     },
 };

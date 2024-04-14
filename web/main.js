@@ -7,6 +7,13 @@ class CommandFromClient {
 }
 
 var ws;
+var maxHeartbeats = 100;
+var heartbeatData = [];
+var heartbeatChart;
+
+var maxLoadTestMarkers = 100;
+var loadTestData = [];
+var loadTestChart;
 
 window.addEventListener("load", function (evt) {
     document.getElementById("startform").onsubmit = function () {
@@ -17,6 +24,9 @@ window.addEventListener("load", function (evt) {
         startTest(command);
         return false
     };
+
+    heartbeatChartRender()
+    loadTestChartRender()
 
     document.getElementById("stopbutton").onclick = function () {
         stopTest();
@@ -39,33 +49,80 @@ window.addEventListener("load", function (evt) {
         }
         ws = new WebSocket("ws://" + window.location.hostname + ":8080/ws");
         ws.onopen = function (evt) {
-            addMessage("opened")
+            //addMessage("opened")
         }
         ws.onclose = function (evt) {
-            addMessage("closed")
+            //addMessage("closed")
             ws = null;
         }
         ws.onmessage = function (evt) {
-            addMessage(evt.data)
+            handleServerEvent(evt.data)
         }
         ws.onerror = function (evt) {
-            addMessage("error: " + evt.data)
+            handleServerEvent("error: " + evt.data)
         }
         return false;
     }
     else {
-        addMessage("Your browser does not support websockets")
+        console.log("Your browser does not support websockets")
     }
 
 });
 
-function addMessage(msg) {
-    if (msg.startsWith("Heartbeat:")) {
-        msg = msg.replace("Heartbeat:", "")
-        addHeartbeatMessage(msg)
-    } else {
+function handleServerEvent(msg) {
+    try {
+        const obj = JSON.parse(msg);
+        if (obj.EventType == "heartbeat") {
+            msg = epochMilisecondsToTime(obj.Data.Timestamp) + " - Ms Taken: " + obj.Data.MSLatency + " Msg: " + obj.Data.Message + " Success: " + obj.Data.Success + " Count: " + obj.Data.Count
+            updateHeartbeatChart(obj)
+            addHeartbeatMessage(msg)
+        } else if (obj.EventType == "loadtest") {
+            msg = obj.Data.VU + " - " + epochMilisecondsToTime(obj.Data.Timestamp) + " - RPS: " + obj.Data.RPS + " Count: " + obj.Data.Count
+            updateLoadTestChart(obj)
+            addLoadTestMessage(msg)
+        }
+    }
+    catch (e) {
+        console.log(e)
         addLoadTestMessage(msg)
     }
+}
+
+function updateHeartbeatChart(obj) {
+    var dataPoint = []
+    dataPoint.push(obj.Data.Timestamp)
+    dataPoint.push(obj.Data.Success == true ? 1 : 0)
+
+    if (heartbeatData.length >= maxHeartbeats) {
+        heartbeatData.shift()
+    }
+    heartbeatData.push(dataPoint)
+
+    heartbeatChart.updateSeries([{
+        name: 'heartbeatChart',
+        data: heartbeatData
+    }])
+}
+
+function updateLoadTestChart(obj) {
+    var dataPoint = []
+    dataPoint.push(obj.Data.Timestamp)
+    dataPoint.push(obj.Data.RPS)
+
+    if (loadTestData.length >= maxLoadTestMarkers) {
+        loadTestData.shift()
+    }
+    loadTestData.push(dataPoint)
+
+    loadTestChart.updateSeries([{
+        name: 'loadTestChart',
+        data: loadTestData
+    }])
+}
+
+function epochMilisecondsToTime(epoch) {
+    var date = new Date(epoch)
+    return date.toTimeString().split(" ")[0]
 }
 
 function addHeartbeatMessage(msg) {
@@ -108,4 +165,114 @@ function stopTest() {
 
 function scrollLogToBottom(t) {
     t.scrollTop = t.scrollHeight;
+}
+
+function heartbeatChartRender() {
+    var options = {
+        chart: {
+            id: 'heartbeatChart',
+            height: 250,
+            type: 'line',
+            animations: {
+                enabled: false,
+                easing: 'linear',
+                dynamicAnimation: {
+                    speed: 400
+                }
+            },
+            toolbar: {
+                show: false
+            },
+            zoom: {
+                enabled: false
+            }
+        },
+        dataLabels: {
+            enabled: false
+        },
+        stroke: {
+            curve: 'smooth'
+        },
+        markers: {
+            size: 1
+        },
+        xaxis: {
+            type: 'datetime'
+        },
+        series: [],
+        title: {
+            text: 'Heartbeat',
+            align: 'left'
+        },
+        noData: {
+            text: 'Loading...'
+        },
+        yaxis: {
+            max: 1.5,
+            min: 0
+        },
+        legend: {
+            show: false
+        },
+    }
+
+    heartbeatChart = new ApexCharts(
+        document.querySelector("#heartbeatChart"),
+        options
+    );
+
+    heartbeatChart.render();
+}
+
+function loadTestChartRender() {
+    var options = {
+        chart: {
+            id: 'loadTestChart',
+            height: 250,
+            type: 'line',
+            animations: {
+                enabled: false,
+                easing: 'linear',
+                dynamicAnimation: {
+                    speed: 400
+                }
+            },
+            toolbar: {
+                show: false
+            },
+            zoom: {
+                enabled: false
+            }
+        },
+        dataLabels: {
+            enabled: false
+        },
+        stroke: {
+            curve: 'smooth'
+        },
+        markers: {
+            size: 1
+        },
+        xaxis: {
+            type: 'datetime'
+        },
+        series: [],
+        title: {
+            text: 'rps',
+            align: 'left'
+        },
+        noData: {
+            text: 'Loading...'
+        },
+        legend: {
+            show: false
+        },
+    }
+
+    loadTestChart = new ApexCharts(
+        document.querySelector("#loadTestChart"),
+        options
+    );
+
+    loadTestChart.render();
 }

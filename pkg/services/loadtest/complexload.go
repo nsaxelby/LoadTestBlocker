@@ -1,6 +1,8 @@
 package loadtest
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -19,6 +21,8 @@ type ComplexLoad struct {
 	requestsInCurrentSecond int
 	currentSecondBenchmark  int
 	sleepTime               int
+	numberOfThreads         int
+	maxNumberOfThreads      int
 }
 
 func NewComplexLoad(hub *website.Hub) *ComplexLoad {
@@ -30,6 +34,8 @@ func NewComplexLoad(hub *website.Hub) *ComplexLoad {
 		requestsInCurrentSecond: 0,
 		currentSecondBenchmark:  0,
 		sleepTime:               0,
+		numberOfThreads:         1,
+		maxNumberOfThreads:      20,
 	}
 }
 
@@ -40,7 +46,8 @@ func (l *ComplexLoad) Start(config models.LoadTestConfig) {
 		// Starts the goroutine
 		l.complexLoadTestRunning = true
 		rpsReceiveChan := make(chan int)
-		go complexloadtest(l, config, rpsReceiveChan)
+		l.numberOfThreads = 1
+		go complexloadtest(l, config, rpsReceiveChan, l.numberOfThreads)
 		go rateAdjuster(l, config, rpsReceiveChan)
 		log.Println("heartbeat started")
 	}
@@ -51,7 +58,7 @@ func (l *ComplexLoad) Stop() {
 	log.Println("heartbeat stopped")
 }
 
-func complexloadtest(l *ComplexLoad, config models.LoadTestConfig, rpsReportingChan chan int) {
+func complexloadtest(l *ComplexLoad, config models.LoadTestConfig, rpsReportingChan chan int, threadNumber int) {
 	for {
 		currentSecond, err := strconv.Atoi(time.Now().Format("05"))
 		if err != nil {
@@ -60,7 +67,26 @@ func complexloadtest(l *ComplexLoad, config models.LoadTestConfig, rpsReportingC
 
 		if currentSecond != l.currentSecondBenchmark {
 			l.currentSecondBenchmark = currentSecond
-			l.hub.Broadcast <- []byte("RPS: " + strconv.Itoa(l.requestsInCurrentSecond))
+
+			loadTestObj := &models.ServerLoadTestEvent{
+				RPS:       l.requestsInCurrentSecond,
+				Timestamp: int64(time.Now().UnixMilli()),
+				Count:     l.requestCount,
+				VU:        threadNumber,
+			}
+
+			baseEvent := &models.ServerEvent{
+				EventType: "loadtest",
+				Data:      loadTestObj,
+			}
+
+			srvEvent, err := json.Marshal(baseEvent)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+
+			l.hub.Broadcast <- []byte(srvEvent)
 			rpsReportingChan <- l.requestsInCurrentSecond
 			l.requestsInCurrentSecond = 0
 		} else {
@@ -74,9 +100,8 @@ func complexloadtest(l *ComplexLoad, config models.LoadTestConfig, rpsReportingC
 		resp, err := client.Get(config.Url)
 		watch.Stop()
 		if err != nil {
-			failureMessage := strconv.Itoa(l.requestCount) + "  load test failed : " + err.Error()
+			failureMessage := strconv.Itoa(threadNumber) + " " + strconv.Itoa(l.requestCount) + "  load test failed : " + err.Error()
 			log.Println(failureMessage)
-			l.hub.Broadcast <- []byte(failureMessage)
 		}
 
 		if resp != nil {
@@ -137,6 +162,13 @@ func rateAdjuster(l *ComplexLoad, config models.LoadTestConfig, rpsReportingChan
 			if sleepTime < 0 {
 				sleepTime = 0
 			}
+
+			// Start new VU threads if we are below our target
+			if l.numberOfThreads < l.maxNumberOfThreads && l.requestCount > 0 {
+				l.numberOfThreads++
+				go complexloadtest(l, config, rpsReportingChan, l.numberOfThreads)
+			}
+
 		} else {
 			// diff is ahead, so number would be negative, which means we need to increase the sleep time
 			sleepTime = sleepTime + microsecondsToAdjustBy

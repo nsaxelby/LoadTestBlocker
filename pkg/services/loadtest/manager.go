@@ -19,7 +19,6 @@ func NewLoadTestManager(hub *website.Hub) *LoadTestManager {
 }
 
 func (l *LoadTestManager) StartLoadTest(config models.LoadTestConfig) {
-	l.hub.Broadcast <- []byte("Starting load test")
 	if config.TargetRPSTestCheck {
 		l.loadtest = NewComplexLoad(l.hub)
 	} else {
@@ -30,7 +29,6 @@ func (l *LoadTestManager) StartLoadTest(config models.LoadTestConfig) {
 }
 
 func (l *LoadTestManager) StopLoadTest() {
-	l.hub.Broadcast <- []byte("Stopping load test")
 	l.heartbeat.StopHeartbeat()
 	l.loadtest.Stop()
 }
