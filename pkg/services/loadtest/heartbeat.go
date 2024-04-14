@@ -61,7 +61,7 @@ func heartbeat(h *Heartbeat, config models.LoadTestConfig) {
 		if err != nil {
 			heartbeatObj := &models.ServerHeartbeatEvent{
 				Success:   false,
-				MSLatency: int(watch.Milliseconds() * time.Millisecond),
+				MSLatency: int(watch.Milliseconds()),
 				Timestamp: int64(time.Now().UnixMilli()),
 				Message:   err.Error(),
 				Count:     h.heartbeatCount,

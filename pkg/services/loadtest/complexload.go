@@ -15,7 +15,8 @@ import (
 
 type ComplexLoad struct {
 	requestTimeout          int
-	requestCount            int
+	requestsSucceeded       int
+	requestsFailed          int
 	complexLoadTestRunning  bool
 	hub                     *website.Hub
 	requestsInCurrentSecond int
@@ -28,7 +29,6 @@ type ComplexLoad struct {
 func NewComplexLoad(hub *website.Hub) *ComplexLoad {
 	return &ComplexLoad{
 		requestTimeout:          0,
-		requestCount:            0,
 		complexLoadTestRunning:  false,
 		hub:                     hub,
 		requestsInCurrentSecond: 0,
@@ -36,6 +36,8 @@ func NewComplexLoad(hub *website.Hub) *ComplexLoad {
 		sleepTime:               0,
 		numberOfThreads:         1,
 		maxNumberOfThreads:      20,
+		requestsSucceeded:       0,
+		requestsFailed:          0,
 	}
 }
 
@@ -69,10 +71,11 @@ func complexloadtest(l *ComplexLoad, config models.LoadTestConfig, rpsReportingC
 			l.currentSecondBenchmark = currentSecond
 
 			loadTestObj := &models.ServerLoadTestEvent{
-				RPS:       l.requestsInCurrentSecond,
-				Timestamp: int64(time.Now().UnixMilli()),
-				Count:     l.requestCount,
-				VU:        threadNumber,
+				RPS:               l.requestsInCurrentSecond,
+				Timestamp:         int64(time.Now().UnixMilli()),
+				RequestsSucceeded: l.requestsSucceeded,
+				RequestsFailed:    l.requestsFailed,
+				VU:                threadNumber,
 			}
 
 			baseEvent := &models.ServerEvent{
@@ -100,15 +103,16 @@ func complexloadtest(l *ComplexLoad, config models.LoadTestConfig, rpsReportingC
 		resp, err := client.Get(config.Url)
 		watch.Stop()
 		if err != nil {
-			failureMessage := strconv.Itoa(threadNumber) + " " + strconv.Itoa(l.requestCount) + "  load test failed : " + err.Error()
+			failureMessage := strconv.Itoa(threadNumber) + " Requests failed: " + strconv.Itoa(l.requestsFailed) + "  load test failed : " + err.Error()
 			log.Println(failureMessage)
+			l.requestsFailed++
+		} else {
+			l.requestsSucceeded++
 		}
 
 		if resp != nil {
 			resp.Body.Close()
 		}
-
-		l.requestCount++
 
 		if l.complexLoadTestRunning == false {
 			rpsReportingChan <- 0
@@ -164,7 +168,7 @@ func rateAdjuster(l *ComplexLoad, config models.LoadTestConfig, rpsReportingChan
 			}
 
 			// Start new VU threads if we are below our target
-			if l.numberOfThreads < l.maxNumberOfThreads && l.requestCount > 0 {
+			if l.numberOfThreads < l.maxNumberOfThreads && l.requestsSucceeded+l.requestsFailed > 0 {
 				l.numberOfThreads++
 				go complexloadtest(l, config, rpsReportingChan, l.numberOfThreads)
 			}

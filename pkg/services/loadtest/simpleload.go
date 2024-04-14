@@ -16,6 +16,8 @@ import (
 type SimpleLoad struct {
 	requestTimeout          int
 	requestCount            int
+	requestsSucceeded       int
+	requestsFailed          int
 	simpleLoadTestRunning   bool
 	hub                     *website.Hub
 	requestsInCurrentSecond int
@@ -30,6 +32,8 @@ func NewSimpleLoad(hub *website.Hub) *SimpleLoad {
 		hub:                     hub,
 		requestsInCurrentSecond: 0,
 		currentSecondBenchmark:  0,
+		requestsSucceeded:       0,
+		requestsFailed:          0,
 	}
 }
 
@@ -61,10 +65,11 @@ func simpleloadtest(l *SimpleLoad, config models.LoadTestConfig) {
 
 		if currentSecond != l.currentSecondBenchmark {
 			loadTestObj := &models.ServerLoadTestEvent{
-				RPS:       l.requestsInCurrentSecond,
-				Timestamp: int64(time.Now().UnixMilli()),
-				Count:     l.requestCount,
-				VU:        1,
+				RPS:               l.requestsInCurrentSecond,
+				Timestamp:         int64(time.Now().UnixMilli()),
+				RequestsSucceeded: l.requestsSucceeded,
+				RequestsFailed:    l.requestsFailed,
+				VU:                1,
 			}
 
 			baseEvent := &models.ServerEvent{
@@ -91,6 +96,9 @@ func simpleloadtest(l *SimpleLoad, config models.LoadTestConfig) {
 		if err != nil {
 			failureMessage := strconv.Itoa(l.requestCount) + "  load test failed : " + err.Error()
 			log.Println(failureMessage)
+			l.requestsFailed++
+		} else {
+			l.requestsSucceeded++
 		}
 
 		if resp != nil {

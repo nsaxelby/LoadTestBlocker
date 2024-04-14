@@ -73,11 +73,15 @@ function handleServerEvent(msg) {
     try {
         const obj = JSON.parse(msg);
         if (obj.EventType == "heartbeat") {
-            msg = epochMilisecondsToTime(obj.Data.Timestamp) + " - Ms Taken: " + obj.Data.MSLatency + " Msg: " + obj.Data.Message + " Success: " + obj.Data.Success + " Count: " + obj.Data.Count
+            msg = epochMilisecondsToTime(obj.Data.Timestamp) + " - Ms Taken: " + obj.Data.MSLatency + " Msg: " + obj.Data.Message + " Success: " + obj.Data.Success
             updateHeartbeatChart(obj)
             addHeartbeatMessage(msg)
         } else if (obj.EventType == "loadtest") {
-            msg = obj.Data.VU + " - " + epochMilisecondsToTime(obj.Data.Timestamp) + " - RPS: " + obj.Data.RPS + " Count: " + obj.Data.Count
+            var vuString = obj.Data.VU.toString()
+            if (vuString.length <= 1) {
+                vuString = "0" + vuString
+            }
+            msg = vuString + " - " + epochMilisecondsToTime(obj.Data.Timestamp) + " - RPS: " + obj.Data.RPS
             updateLoadTestChart(obj)
             addLoadTestMessage(msg)
         }
