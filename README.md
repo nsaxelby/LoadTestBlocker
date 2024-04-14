@@ -3,6 +3,8 @@ Load testing a URL with a L7 Flood.
 
 
 ## Running
+Optional: run `docker compose up -d` to start the local httpbin (provides a local test destination)
+
 Run the web app
 `go run ./cmd/web/main.go`
 
