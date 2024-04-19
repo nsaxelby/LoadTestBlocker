@@ -15,6 +15,12 @@ var maxLoadTestMarkers = 100;
 var loadTestData = [];
 var loadTestChart;
 
+var startTime
+var stopwatchInterval
+var elapsedPausedTime = 0; // to keep track of the elapsed time while stopped
+
+var state = ""
+
 window.addEventListener("load", function (evt) {
     document.getElementById("startform").onsubmit = function () {
         const command = new CommandFromClient(
@@ -76,6 +82,7 @@ function handleServerEvent(msg) {
             msg = epochMilisecondsToTime(obj.Data.Timestamp) + " - Ms Taken: " + obj.Data.MSLatency + " Msg: " + obj.Data.Message + " Success: " + obj.Data.Success
             updateHeartbeatChart(obj)
             addHeartbeatMessage(msg)
+            updateState(obj.Data.Success)
         } else if (obj.EventType == "loadtest") {
             var vuString = obj.Data.VU.toString()
             if (vuString.length <= 1) {
@@ -89,6 +96,27 @@ function handleServerEvent(msg) {
     catch (e) {
         console.log(e)
         addLoadTestMessage(msg)
+    }
+}
+
+function updateState(success) {
+    if (success) {
+        if (state == "fail") {
+            // We are in a state of fail, and we have changed to success, so we update blocktime
+            var currentTime = new Date().getTime()
+            var elapsedTimeInMiliseconds = currentTime - startTime
+            console.log("time blocked for :" + elapsedTimeInMiliseconds)
+        }
+        state = "success"
+    } else {
+        if (state == "success") {
+            // We have gone from success to fail
+            var currentTime = new Date().getTime()
+            var elapsedTimeInMiliseconds = currentTime - startTime
+            console.log("time unblocked for :" + elapsedTimeInMiliseconds)
+        }
+        state = "fail"
+
     }
 }
 
@@ -151,6 +179,7 @@ function startTest(commandFromClient) {
     const myJSON = JSON.stringify(commandFromClient);
 
     ws.send("start " + myJSON);
+    startStopwatch()
     document.getElementById("startbutton").disabled = true;
     document.getElementById("stopbutton").disabled = false;
     document.getElementById("heartbeatUrlInput").disabled = true;
@@ -161,6 +190,7 @@ function stopTest() {
         return
     }
 
+    stopStopwatch()
     ws.send("stop");
     document.getElementById("startbutton").disabled = false;
     document.getElementById("stopbutton").disabled = true;
@@ -280,3 +310,30 @@ function loadTestChartRender() {
 
     loadTestChart.render();
 }
+
+function startStopwatch() {
+    startTime = new Date().getTime()
+    stopwatchInterval = setInterval(updateStopwatch, 50)
+}
+
+function updateStopwatch() {
+    var currentTime = new Date().getTime()
+    var elapsedTimeInMiliseconds = currentTime - startTime
+    document.getElementById("stopwatch").innerHTML = milisecondsToFriendlyTime(elapsedTimeInMiliseconds)
+    //console.log(elapsedTimeInMiliseconds)
+    //var seconds = Math.floor(elapsedTimeInMiliseconds / 1000) % 60
+    //console.log(seconds)
+}
+
+function milisecondsToFriendlyTime(miliseconds) {
+    var milisecondsMod = Math.floor(miliseconds) % 1000
+    var seconds = Math.floor(miliseconds / 1000) % 60
+    var minutes = Math.floor(miliseconds / (1000 * 60)) % 60
+    return String(minutes).padStart(2, '0') + ":" + String(seconds).padStart(2, '0') + "." + String(milisecondsMod).padStart(3, '0')
+}
+
+function stopStopwatch() {
+    clearInterval(stopwatchInterval)
+    stopwatchInterval = null
+}
+

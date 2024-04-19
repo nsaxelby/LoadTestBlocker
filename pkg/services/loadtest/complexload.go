@@ -14,30 +14,30 @@ import (
 )
 
 type ComplexLoad struct {
-	requestTimeout          int
-	requestsSucceeded       int
-	requestsFailed          int
-	complexLoadTestRunning  bool
-	hub                     *website.Hub
-	requestsInCurrentSecond int
-	currentSecondBenchmark  int
-	sleepTime               int
-	numberOfThreads         int
-	maxNumberOfThreads      int
+	requestTimeout                    int
+	requestsSucceeded                 int
+	requestsFailed                    int
+	complexLoadTestRunning            bool
+	hub                               *website.Hub
+	successfulRequestsInCurrentSecond int
+	currentSecondBenchmark            int
+	sleepTime                         int
+	numberOfThreads                   int
+	maxNumberOfThreads                int
 }
 
 func NewComplexLoad(hub *website.Hub) *ComplexLoad {
 	return &ComplexLoad{
-		requestTimeout:          0,
-		complexLoadTestRunning:  false,
-		hub:                     hub,
-		requestsInCurrentSecond: 0,
-		currentSecondBenchmark:  0,
-		sleepTime:               0,
-		numberOfThreads:         1,
-		maxNumberOfThreads:      20,
-		requestsSucceeded:       0,
-		requestsFailed:          0,
+		requestTimeout:                    0,
+		complexLoadTestRunning:            false,
+		hub:                               hub,
+		successfulRequestsInCurrentSecond: 0,
+		currentSecondBenchmark:            0,
+		sleepTime:                         0,
+		numberOfThreads:                   1,
+		maxNumberOfThreads:                20,
+		requestsSucceeded:                 0,
+		requestsFailed:                    0,
 	}
 }
 
@@ -71,7 +71,7 @@ func complexloadtest(l *ComplexLoad, config models.LoadTestConfig, rpsReportingC
 			l.currentSecondBenchmark = currentSecond
 
 			loadTestObj := &models.ServerLoadTestEvent{
-				RPS:               l.requestsInCurrentSecond,
+				RPS:               l.successfulRequestsInCurrentSecond,
 				Timestamp:         int64(time.Now().UnixMilli()),
 				RequestsSucceeded: l.requestsSucceeded,
 				RequestsFailed:    l.requestsFailed,
@@ -90,10 +90,8 @@ func complexloadtest(l *ComplexLoad, config models.LoadTestConfig, rpsReportingC
 			}
 
 			l.hub.Broadcast <- []byte(srvEvent)
-			rpsReportingChan <- l.requestsInCurrentSecond
-			l.requestsInCurrentSecond = 0
-		} else {
-			l.requestsInCurrentSecond++
+			rpsReportingChan <- l.requestsSucceeded
+			l.successfulRequestsInCurrentSecond = 0
 		}
 
 		client := &http.Client{
@@ -108,6 +106,7 @@ func complexloadtest(l *ComplexLoad, config models.LoadTestConfig, rpsReportingC
 			l.requestsFailed++
 		} else {
 			l.requestsSucceeded++
+			l.successfulRequestsInCurrentSecond++
 		}
 
 		if resp != nil {

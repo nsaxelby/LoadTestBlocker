@@ -18,8 +18,6 @@ type Heartbeat struct {
 	heartbeatTimeout    int
 	heartbeatCount      int
 	heartbeatRunning    bool
-	timeOfLastSuccess   time.Time
-	timeOfLastBlock     time.Time
 	hub                 *website.Hub
 }
 
@@ -79,15 +77,12 @@ func heartbeat(h *Heartbeat, config models.LoadTestConfig) {
 				return
 			}
 
-			h.timeOfLastBlock = time.Now()
 			failureMessage := "HB Error: " + strconv.Itoa(heartbeatObj.Count) + " - " + heartbeatObj.Status + " msg: " + heartbeatObj.Message
 			log.Println(failureMessage)
 			h.hub.Broadcast <- []byte(srvEvent)
 		}
 
 		if resp != nil {
-			h.timeOfLastSuccess = time.Now()
-
 			heartbeatObj := &models.ServerHeartbeatEvent{
 				Success:   true,
 				MSLatency: int(watch.Milliseconds()),

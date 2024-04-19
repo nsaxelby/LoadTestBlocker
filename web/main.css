@@ -7,3 +7,9 @@ p {
     padding-top: 20px;
     padding-bottom: 20px;
 }
+
+#stopwatchDiv {
+    font-size: medium;
+    background-color: beige;
+
+}

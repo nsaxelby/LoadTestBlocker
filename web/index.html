@@ -25,7 +25,7 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <label for="targetRPSTestCheck" class="form-check-label">Targeted RPS</label>
                     <input type="checkbox" class="form-check-input" id="targetRPSTestCheck"
                         aria-describedby="targetRPSTestCheckHelp" checked>
@@ -33,7 +33,7 @@
                         a constant RPS (experimental feature!)
                     </div>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-3">
                     <label for="loadRPS" class="form-label">Rate per second</label>
                     <input type="text" class="form-control" id="loadRPS" aria-describedby="loadRPSHelp" value="300">
                     <div id="loadRPSHelp" class="form-text">Requests per second for load
@@ -43,6 +43,10 @@
             <button type="submit" class="btn btn-primary" id="startbutton">Start Test</button>
             <button type="button" class="btn btn-primary" id="stopbutton">Stop Test</button>
         </form>
+        <div class="row  justify-content-md-center" style="padding-top: 10px; padding-bottom: 10px;">
+            <div class="col-md-3" id="stopwatchDiv"><label>Test running for: &nbsp;</label><b id="stopwatch">0s</b>
+            </div>
+        </div>
         <div class="row">
             <div class="col-md-6">
                 <label for="heartbeatoutputlog" class="form-label">Heartbeat Output</label>
@@ -53,6 +57,7 @@
                 <textarea class="form-control" id="loadtestoutput" rows="6"></textarea>
             </div>
         </div>
+
         <div class="row" style="padding-top:15px">
             <div class="col-md-6">
                 <div id="heartbeatChart"></div>
