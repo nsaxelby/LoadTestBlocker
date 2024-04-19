@@ -16,6 +16,7 @@ var loadTestData = [];
 var loadTestChart;
 
 var startTime
+var timeLastStateChanged
 var stopwatchInterval
 var elapsedPausedTime = 0; // to keep track of the elapsed time while stopped
 
@@ -104,19 +105,20 @@ function updateState(success) {
         if (state == "fail") {
             // We are in a state of fail, and we have changed to success, so we update blocktime
             var currentTime = new Date().getTime()
-            var elapsedTimeInMiliseconds = currentTime - startTime
+            var elapsedTimeInMiliseconds = currentTime - timeLastStateChanged
             console.log("time blocked for :" + elapsedTimeInMiliseconds)
+            timeLastStateChanged = new Date().getTime()
         }
         state = "success"
     } else {
         if (state == "success") {
             // We have gone from success to fail
             var currentTime = new Date().getTime()
-            var elapsedTimeInMiliseconds = currentTime - startTime
+            var elapsedTimeInMiliseconds = currentTime - timeLastStateChanged
             console.log("time unblocked for :" + elapsedTimeInMiliseconds)
+            timeLastStateChanged = new Date().getTime()
         }
         state = "fail"
-
     }
 }
 
@@ -313,6 +315,7 @@ function loadTestChartRender() {
 
 function startStopwatch() {
     startTime = new Date().getTime()
+    timeLastStateChanged = new Date().getTime()
     stopwatchInterval = setInterval(updateStopwatch, 50)
 }
 
