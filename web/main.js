@@ -365,7 +365,7 @@ function timelineChartRender() {
         ],
         chart: {
             id: 'timelineApexChart',
-            height: 350,
+            height: 200,
             type: 'rangeBar',
             zoom: {
                 enabled: true
