@@ -110,7 +110,14 @@ func heartbeat(h *Heartbeat, config models.LoadTestConfig) {
 		}
 
 		h.heartbeatCount++
-		time.Sleep(time.Millisecond * time.Duration(h.heartbeatIntervalMs))
+
+		var timeToSleep = h.heartbeatIntervalMs - int(watch.Milliseconds())
+		if timeToSleep < 0 {
+			timeToSleep = 0
+		} else {
+			log.Println("sleeping for " + strconv.Itoa(timeToSleep) + "ms")
+			time.Sleep(time.Millisecond * time.Duration(timeToSleep))
+		}
 
 		if h.heartbeatRunning == false {
 			return

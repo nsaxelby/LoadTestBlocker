@@ -90,7 +90,7 @@ func complexloadtest(l *ComplexLoad, config models.LoadTestConfig, rpsReportingC
 			}
 
 			l.hub.Broadcast <- []byte(srvEvent)
-			rpsReportingChan <- l.requestsSucceeded
+			rpsReportingChan <- l.successfulRequestsInCurrentSecond
 			l.successfulRequestsInCurrentSecond = 0
 		}
 
