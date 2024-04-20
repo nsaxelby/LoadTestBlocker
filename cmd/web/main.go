@@ -38,6 +38,7 @@ func initWebsite(hub *website.Hub, manager *loadtest.LoadTestManager) {
 		ReadHeaderTimeout: 3 * time.Second,
 	}
 
+	log.Println("Server started")
 	err := server.ListenAndServe()
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
