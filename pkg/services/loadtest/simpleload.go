@@ -69,7 +69,7 @@ func simpleloadtest(l *SimpleLoad, config models.LoadTestConfig) {
 				Timestamp:         int64(time.Now().UnixMilli()),
 				RequestsSucceeded: l.requestsSucceeded,
 				RequestsFailed:    l.requestsFailed,
-				VU:                1,
+				NumberOfVUs:       1,
 			}
 
 			baseEvent := &models.ServerEvent{

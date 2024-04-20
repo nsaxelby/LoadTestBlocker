@@ -9,6 +9,21 @@ p {
 }
 
 #stopwatchDiv {
-    font-size: medium;
+    font-size: large;
     background-color: beige;
+}
+
+#failedRequestsDiv {
+    font-size: medium;
+    background-color: rgb(227, 93, 93);
+}
+
+#successfulRequestsDiv {
+    font-size: medium;
+    background-color: rgb(201, 255, 201);
+}
+
+#vusDiv {
+    font-size: medium;
+    background-color: rgb(208, 210, 255);
 }

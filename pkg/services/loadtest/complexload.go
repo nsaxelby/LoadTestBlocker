@@ -75,21 +75,11 @@ func complexloadtest(l *ComplexLoad, config models.LoadTestConfig, rpsReportingC
 				Timestamp:         int64(time.Now().UnixMilli()),
 				RequestsSucceeded: l.requestsSucceeded,
 				RequestsFailed:    l.requestsFailed,
-				VU:                threadNumber,
+				NumberOfVUs:       l.numberOfThreads,
 			}
 
-			baseEvent := &models.ServerEvent{
-				EventType: "loadtest",
-				Data:      loadTestObj,
-			}
+			sendServerEvent(l, loadTestObj)
 
-			srvEvent, err := json.Marshal(baseEvent)
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-
-			l.hub.Broadcast <- []byte(srvEvent)
 			rpsReportingChan <- l.successfulRequestsInCurrentSecond
 			l.successfulRequestsInCurrentSecond = 0
 		}
@@ -115,10 +105,35 @@ func complexloadtest(l *ComplexLoad, config models.LoadTestConfig, rpsReportingC
 
 		if l.complexLoadTestRunning == false {
 			rpsReportingChan <- 0
+
+			loadTestObj := &models.ServerLoadTestEvent{
+				RPS:               0,
+				Timestamp:         int64(time.Now().UnixMilli()),
+				RequestsSucceeded: l.requestsSucceeded,
+				RequestsFailed:    l.requestsFailed,
+				NumberOfVUs:       l.numberOfThreads,
+			}
+
+			sendServerEvent(l, loadTestObj)
 			return
 		}
 		time.Sleep(time.Duration(l.sleepTime) * time.Microsecond)
 	}
+}
+
+func sendServerEvent(l *ComplexLoad, loadTestObj *models.ServerLoadTestEvent) {
+	baseEvent := &models.ServerEvent{
+		EventType: "loadtest",
+		Data:      loadTestObj,
+	}
+
+	srvEvent, err := json.Marshal(baseEvent)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	l.hub.Broadcast <- []byte(srvEvent)
 }
 
 func rateAdjuster(l *ComplexLoad, config models.LoadTestConfig, rpsReportingChan chan int) {

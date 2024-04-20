@@ -15,6 +15,9 @@ var maxLoadTestMarkers = 100;
 var loadTestData = [];
 var loadTestChart;
 
+var timelineData = []
+var timelineChart;
+
 var startTime
 var timeLastStateChanged
 var stopwatchInterval
@@ -34,6 +37,7 @@ window.addEventListener("load", function (evt) {
 
     heartbeatChartRender()
     loadTestChartRender()
+    timelineChartRender()
 
     document.getElementById("stopbutton").onclick = function () {
         stopTest();
@@ -76,28 +80,36 @@ window.addEventListener("load", function (evt) {
 
 });
 
-function handleServerEvent(msg) {
-    try {
-        const obj = JSON.parse(msg);
-        if (obj.EventType == "heartbeat") {
-            msg = epochMilisecondsToTime(obj.Data.Timestamp) + " - Ms Taken: " + obj.Data.MSLatency + " Msg: " + obj.Data.Message + " Success: " + obj.Data.Success
-            updateHeartbeatChart(obj)
-            addHeartbeatMessage(msg)
-            updateState(obj.Data.Success)
-        } else if (obj.EventType == "loadtest") {
-            var vuString = obj.Data.VU.toString()
-            if (vuString.length <= 1) {
-                vuString = "0" + vuString
+function handleServerEvent(inputString) {
+    var spitEvents = splitStringByChar(inputString, '\n')
+    for (let index = 0; index < spitEvents.length; index++) {
+        const eventJson = spitEvents[index];
+        try {
+            const obj = JSON.parse(eventJson);
+            if (obj.EventType == "heartbeat") {
+                msg = epochMilisecondsToTime(obj.Data.Timestamp) + " - Ms Taken: " + obj.Data.MSLatency + " Msg: " + obj.Data.Message + " Success: " + obj.Data.Success
+                updateHeartbeatChart(obj)
+                addHeartbeatMessage(msg)
+                updateState(obj.Data.Success)
+            } else if (obj.EventType == "loadtest") {
+                msg = epochMilisecondsToTime(obj.Data.Timestamp) + " - RPS: " + obj.Data.RPS
+                updateLoadTestChart(obj)
+                addLoadTestMessage(msg)
+                updateRequestsTiles(obj.Data.RequestsSucceeded, obj.Data.RequestsFailed)
+                updateVUsTile(obj.Data.NumberOfVUs)
             }
-            msg = vuString + " - " + epochMilisecondsToTime(obj.Data.Timestamp) + " - RPS: " + obj.Data.RPS
-            updateLoadTestChart(obj)
-            addLoadTestMessage(msg)
+        }
+        catch (e) {
+            console.log(e)
+            addLoadTestMessage(eventJson)
         }
     }
-    catch (e) {
-        console.log(e)
-        addLoadTestMessage(msg)
-    }
+
+}
+
+function splitStringByChar(str, char) {
+    var splitString = str.split(char)
+    return splitString
 }
 
 function updateState(success) {
@@ -107,7 +119,19 @@ function updateState(success) {
             var currentTime = new Date().getTime()
             var elapsedTimeInMiliseconds = currentTime - timeLastStateChanged
             console.log("time blocked for :" + elapsedTimeInMiliseconds)
+
+            var dataPoint = {
+                x: 'Blocked',
+                y: [
+                    timeLastStateChanged,
+                    new Date().getTime()
+                ],
+                fillColor: '#4d0103'
+            }
+            timelineData.push(dataPoint)
             timeLastStateChanged = new Date().getTime()
+
+            updateTimeLine()
         }
         state = "success"
     } else {
@@ -116,10 +140,31 @@ function updateState(success) {
             var currentTime = new Date().getTime()
             var elapsedTimeInMiliseconds = currentTime - timeLastStateChanged
             console.log("time unblocked for :" + elapsedTimeInMiliseconds)
+
+            var dataPoint = {
+                x: 'Unblocked',
+                y: [
+                    timeLastStateChanged,
+                    new Date().getTime()
+                ],
+                fillColor: '#005c1f'
+            }
+            timelineData.push(dataPoint)
+
             timeLastStateChanged = new Date().getTime()
+            updateTimeLine()
         }
         state = "fail"
     }
+}
+
+function updateRequestsTiles(successCount, failedCount) {
+    document.getElementById("successfulRequests").innerHTML = successCount
+    document.getElementById("failedRequests").innerHTML = failedCount
+}
+
+function updateVUsTile(vus) {
+    document.getElementById("vus").innerHTML = vus
 }
 
 function updateHeartbeatChart(obj) {
@@ -241,7 +286,7 @@ function heartbeatChartRender() {
             align: 'left'
         },
         noData: {
-            text: 'Loading...'
+            text: '...'
         },
         yaxis: {
             max: 1.5,
@@ -298,7 +343,7 @@ function loadTestChartRender() {
             align: 'left'
         },
         noData: {
-            text: 'Loading...'
+            text: '...'
         },
         legend: {
             show: false
@@ -313,6 +358,58 @@ function loadTestChartRender() {
     loadTestChart.render();
 }
 
+function timelineChartRender() {
+    var options = {
+        series: [
+            { data: [] }
+        ],
+        chart: {
+            id: 'timelineApexChart',
+            height: 350,
+            type: 'rangeBar',
+            zoom: {
+                enabled: true
+            }
+        },
+        plotOptions: {
+            bar: {
+                horizontal: true,
+                distributed: true,
+                dataLabels: {
+                    hideOverflowingLabels: true
+                }
+            }
+        },
+        xaxis: {
+            type: 'datetime'
+        },
+        dataLabels: {
+            enabled: true,
+            formatter: function (val, opts) {
+                var a = moment(val[0])
+                var b = moment(val[1])
+                var diff = b.diff(a, 'seconds')
+                return diff + 's'
+            },
+            style: {
+                colors: ['#f3f4f5', '#f3f4f5']
+            }
+        },
+        grid: {
+            row: {
+                colors: ['#f3f4f5', '#f3f4f5'],
+                opacity: 1
+            }
+        }
+    }
+
+    timelineChart = new ApexCharts(
+        document.querySelector("#timelineChart"),
+        options
+    );
+    timelineChart.render();
+}
+
 function startStopwatch() {
     startTime = new Date().getTime()
     timeLastStateChanged = new Date().getTime()
@@ -323,9 +420,6 @@ function updateStopwatch() {
     var currentTime = new Date().getTime()
     var elapsedTimeInMiliseconds = currentTime - startTime
     document.getElementById("stopwatch").innerHTML = milisecondsToFriendlyTime(elapsedTimeInMiliseconds)
-    //console.log(elapsedTimeInMiliseconds)
-    //var seconds = Math.floor(elapsedTimeInMiliseconds / 1000) % 60
-    //console.log(seconds)
 }
 
 function milisecondsToFriendlyTime(miliseconds) {
@@ -338,5 +432,15 @@ function milisecondsToFriendlyTime(miliseconds) {
 function stopStopwatch() {
     clearInterval(stopwatchInterval)
     stopwatchInterval = null
+}
+
+function updateTimeLine() {
+    timelineChart.updateSeries([{
+        name: 'timelineChart',
+        data: timelineData
+    }]);
+    var dateTimeNow = new Date().getTime() + 5000
+    var dateTimeNowMinusTwoMinutes = dateTimeNow - 120000
+    timelineChart.zoomX(dateTimeNowMinusTwoMinutes, dateTimeNow)
 }
 

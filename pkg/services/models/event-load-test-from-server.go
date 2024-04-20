@@ -5,5 +5,5 @@ type ServerLoadTestEvent struct {
 	RPS               int   `json:"RPS"`
 	RequestsSucceeded int   `json:"RequestsSucceeded"`
 	RequestsFailed    int   `json:"RequestsFailed"`
-	VU                int   `json:VU`
+	NumberOfVUs       int   `json:NumberOfVUs`
 }
