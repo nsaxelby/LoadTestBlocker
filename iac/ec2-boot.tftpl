@@ -1,10 +1,25 @@
 #!/bin/bash 
-sudo yum install git
+yum install git -y
 
 wget https://go.dev/dl/go1.22.2.linux-arm64.tar.gz
-sudo tar -C /usr/local -xzf go1.22.2.linux-arm64.tar.gz
-export PATH=$PATH:/usr/local/go/bin
+tar -C /usr/local -xzf go1.22.2.linux-arm64.tar.gz
 
 git clone https://github.com/nsaxelby/LoadTestBlocker.git
-cd LoadTestBlocker
-nohup go run ./cmd/web/main.go
+
+cat << EOF >> /etc/systemd/system/loadtestblockerweb.service
+[Unit]
+Description=Load test blocker web
+[Service]
+WorkingDirectory=/LoadTestBlocker
+ExecStart=/usr/local/go/bin/go run /LoadTestBlocker/cmd/web/main.go
+Restart=always
+RestartSec=10
+KillSignal=SIGINT
+SyslogIdentifier=loadtestblockerweb
+User=root
+Environment=MYAPP_ENVIRONMENT=Production
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl enable loadtestblockerweb.service
+systemctl start loadtestblockerweb.service

@@ -40,3 +40,11 @@ resource "aws_security_group" "ec2-load-test-blocker-sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+
+output "ec2-ssh-connect" {
+  value = "'ssh ec2-user@${aws_instance.instance-1.public_ip} -i cert.pem'"
+}
+
+output "web-connect" {
+  value = "http://${aws_instance.instance-1.public_ip}:8080"
+}
