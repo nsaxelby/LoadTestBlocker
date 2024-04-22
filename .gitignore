@@ -22,3 +22,12 @@ go.work
 .DS_Store
 k6-dev-ck.js
 cmd/web/__debug_bin*
+
+# priv keys
+iac/cert.pem
+cert.pem
+iac/.terraform
+iac/.terraform.lock.hcl
+iac/.terraform.tfstate.lock.info
+iac/terraform.tfstate
+iac/terraform.tfstate.backup
