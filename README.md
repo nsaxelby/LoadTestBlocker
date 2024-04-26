@@ -13,6 +13,8 @@ Then visit `http://localhost:8080` in a browser.
 ### Running a load test
 Enter in the URL you want to load test, and press the 'Start Test' button.
 
+Note: the 'rate tracking' feature doesn't work too well at the moment, Issue is open: https://github.com/nsaxelby/LoadTestBlocker/issues/1
+
 ### Screenshot
 ![Screenshot1](screenshot1.png)
 
