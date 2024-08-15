@@ -126,7 +126,7 @@ function updateState(success) {
                     timeLastStateChanged,
                     new Date().getTime()
                 ],
-                fillColor: '#4d0103'
+                fillColor: '#005c1f'
             }
             timelineData.push(dataPoint)
             timeLastStateChanged = new Date().getTime()
@@ -147,7 +147,7 @@ function updateState(success) {
                     timeLastStateChanged,
                     new Date().getTime()
                 ],
-                fillColor: '#005c1f'
+                fillColor: '#4d0103'
             }
             timelineData.push(dataPoint)
 
