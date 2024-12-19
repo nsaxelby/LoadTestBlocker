@@ -1,6 +1,4 @@
 github.com/bradhe/stopwatch v0.0.0-20190618212248-a58cccc508ea h1:+GIgqdjrcKMHK1JqC1Bb9arFtNOGX/SWCkueobreyQU=
 github.com/bradhe/stopwatch v0.0.0-20190618212248-a58cccc508ea/go.mod h1:P/j2DSP/kCOakHBACzMqmOdrTEieqdSiB3U9fqk7qgc=
-github.com/gorilla/websocket v1.5.1 h1:gmztn0JnHVt9JZquRuzLw3g4wouNVzKL15iLr/zn/QY=
-github.com/gorilla/websocket v1.5.1/go.mod h1:x3kM2JMyaluk02fnUJpQuwD2dCS5NDG2ZHL0uE0tcaY=
-golang.org/x/net v0.22.0 h1:9sGLhx7iRIHEiX0oAJ3MRZMUCElJgy7Br1nO+AMN3Tc=
-golang.org/x/net v0.22.0/go.mod h1:JKghWKKOSdJwpW2GEx0Ja7fmaKnMsbu+MWVZTokSYmg=
+github.com/gorilla/websocket v1.5.3 h1:saDtZ6Pbx/0u+bgYQ3q96pZgCzfhKXGPqt7kZ72aNNg=
+github.com/gorilla/websocket v1.5.3/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
